@@ -9,6 +9,10 @@ export interface IApi {
     ): Promise<T>;
 }
 
+export interface ICardActions {
+    onClick: () => void;
+}
+
 export interface IProduct {
     id: string;
     description: string;
@@ -35,13 +39,7 @@ export type IOrderRequest = IBuyer & {
     total: number;
 };
 
-type IOrderErrorResponse = {
-    error: string;
-};
-
-type IOrderSuccessResponse = {
+export type IOrderResponse = {
     id: string;
     total: number;
 }
-
-export type IOrderResponse =  IOrderSuccessResponse | IOrderErrorResponse;

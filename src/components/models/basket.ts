@@ -1,10 +1,13 @@
 import { IProduct } from "../../types";
+import { IEvents } from "../base/Events";
 
 export class Basket {
     productsToBuy: IProduct[];
+    events: IEvents;
 
-    constructor() {
+    constructor(events: IEvents) {
         this.productsToBuy = [];
+        this.events = events;
     }
 
     getProductsToBuy(): IProduct[] {
@@ -15,6 +18,7 @@ export class Basket {
         const isItemInBasket = this.isProductInBasket(product.id);
         if (!isItemInBasket) {
             this.productsToBuy.push(product);
+            this.events.emit("basket:change");
         }
     }
 
@@ -22,10 +26,12 @@ export class Basket {
         this.productsToBuy = this.productsToBuy.filter(
             (item) => item !== product
         );
+        this.events.emit("basket:change");
     }
 
     clearBusket(): void {
         this.productsToBuy = [];
+        this.events.emit("basket:clear");
     }
 
     getCostProductsToBuy(): number {
@@ -43,7 +49,7 @@ export class Basket {
         return this.productsToBuy.length;
     }
 
-    protected isProductInBasket(id: string): boolean {
+    isProductInBasket(id: string): boolean {
         let isItemInBasket = this.productsToBuy.find(
             (product) => product.id === id
         );
