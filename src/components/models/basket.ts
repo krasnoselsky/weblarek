@@ -29,10 +29,13 @@ export class Basket {
         this.events.emit("basket:change");
     }
 
+   
     clearBusket(): void {
-        this.productsToBuy = [];
-        this.events.emit("basket:clear");
-    }
+        this.productsToBuy = []; 
+        this.events.emit("basket:change"); 
+    
+    
+}
 
     getCostProductsToBuy(): number {
         let sum = 0;
