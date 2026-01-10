@@ -2,8 +2,8 @@ import { IProduct } from "../../types";
 import { IEvents } from "../base/Events";
 
 export class Basket {
-    productsToBuy: IProduct[];
-    events: IEvents;
+   private productsToBuy: IProduct[];
+   events: IEvents;
 
     constructor(events: IEvents) {
         this.productsToBuy = [];
@@ -11,7 +11,7 @@ export class Basket {
     }
 
     getProductsToBuy(): IProduct[] {
-        return this.productsToBuy;
+        return [...this.productsToBuy];
     }
 
     addProductsToBuy(product: IProduct): void {

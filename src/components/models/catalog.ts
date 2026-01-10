@@ -2,9 +2,9 @@ import { IProduct } from "../../types";
 import { IEvents } from "../base/Events";
 
 export class Catalog {
-    products: IProduct[];
-    selectedProduct: IProduct | null;
-    events: IEvents;
+    private products: IProduct[];
+    private selectedProduct: IProduct | null;
+    private events: IEvents;
 
     constructor(events: IEvents) {
         this.products = [];
@@ -18,7 +18,7 @@ export class Catalog {
     }
 
     getProducts(): IProduct[] {
-        return this.products;
+        return [...this.products];
     }
 
     getProductById(id: string): IProduct | undefined {

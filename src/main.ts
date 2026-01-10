@@ -26,7 +26,7 @@ const productsToBuyModel = new Basket(events);
 const buyerInfoModel = new BuyerInfo(events);
 const apiModel = new Communication(new Api(API_URL));
 
-const headerModel = new Header(ensureElement(".header"), events);
+const headerView = new Header(ensureElement(".header"), events);
 const galleryModel = new Gallery(ensureElement(".page__wrapper"), events);
 const modalWindowModel = new ModalWindow(ensureElement(".modal"), events);
 const basketModalModel = new BasketModal(
@@ -108,25 +108,30 @@ events.on("product:delete", (product: IProduct) => {
 });
 
 events.on("basket:change", () => {
+    
     const products = productsToBuyModel.getProductsToBuy();
-    let basketCounter = 0;
-
-    const arrProducts = products.map((product) => {
+    
+    const arrProducts = products.map((product, index) => {
         const productToBuy = productsModel.getProductById(product.id);
-        const basketCard = new ProductInBasket(cloneTemplate<HTMLElement>("#card-basket"),  {
+        const basketCard = new ProductInBasket(cloneTemplate<HTMLElement>("#card-basket"), {
             onClick: () => events.emit("product:delete", product)
         });
-        basketCounter++;
-        basketCard.index = basketCounter;
+        basketCard.index = index + 1; 
         return basketCard.render(productToBuy);
     });
-    if (productsToBuyModel.getQuantityProductsToBuy() === 0) {
-        basketModalModel.isregisterButtonAllowed(true);
-    }
-    headerModel.counter = basketCounter;
-    basketModalModel.totalPrice = productsToBuyModel.getCostProductsToBuy();
+    
+   
+    const basketCounter = productsToBuyModel.getQuantityProductsToBuy();
+    const totalPrice = productsToBuyModel.getCostProductsToBuy();
+    
+    
+    headerView.counter = basketCounter;
+    basketModalModel.totalPrice = totalPrice;
     basketModalModel.item = arrProducts;
+    basketModalModel.isregisterButtonAllowed(basketCounter === 0);
 });
+
+
 
 events.on("busket:submit", () => {
     modalWindowModel.content = paymentAddressFormModel.render();
@@ -140,101 +145,86 @@ events.on("payment:cash", () => {
     buyerInfoModel.setPayment("cash");
 });
 
-events.on("buyer:changePayment", () => {
-    const paymentWay = buyerInfoModel.getBuyerInfo();
-    paymentAddressFormModel.payment = paymentWay.payment;
+function updatePaymentAddressForm() {
+    const buyerData = buyerInfoModel.getBuyerInfo();
+    paymentAddressFormModel.payment = buyerData.payment;
+    paymentAddressFormModel.address = buyerData.address;
     const errors = buyerInfoModel.validateBuyerInfo();
+    
     let validate: string = "";
     if (errors.payment && errors.address) {
         validate = `${errors.address}; ${errors.payment}`;
     } else if (errors.address) {
         validate = `${errors.address}`;
-    } else if (errors.payment){
+    } else if (errors.payment) {
         validate = `${errors.payment}`;
     }
+    
     paymentAddressFormModel.errors = validate;
     if (!errors.payment && !errors.address) {
         paymentAddressFormModel.isallowedButton(false);
     } else {
         paymentAddressFormModel.isallowedButton(true);
     }
-});
+}
 
+function updateEmailPhoneForm() {
+    const buyerData = buyerInfoModel.getBuyerInfo();
+    emailPhoneFormModel.email = buyerData.email;
+    emailPhoneFormModel.phone = buyerData.phone;
+    const errors = buyerInfoModel.validateBuyerInfo();
+    
+    let validate: string = "";
+    if (errors.phone && errors.email) {
+        validate = `${errors.email}; ${errors.phone}`;
+    } else if (errors.phone) {
+        validate = `${errors.phone}`;
+    } else if (errors.email) {
+        validate = `${errors.email}`;
+    }
+    
+    emailPhoneFormModel.errors = validate;
+    if (!errors.phone && !errors.email) {
+        emailPhoneFormModel.isallowedButton(false);
+    } else {
+        emailPhoneFormModel.isallowedButton(true);
+    }
+}
+
+
+function updateAllForms() {
+    updatePaymentAddressForm();
+    updateEmailPhoneForm();
+}
+events.on("buyer:changePayment", () => {
+    updatePaymentAddressForm();
+});
+events.on("buyer:changeAddress", () => {
+    updatePaymentAddressForm();
+});
+events.on("buyer:changeEmail", () => {
+    updateEmailPhoneForm();
+});
+events.on("buyer:changePhone", () => {
+    updateEmailPhoneForm();
+});
+events.on("buyer:clear", () => {
+    updateAllForms();
+});
 events.on("address:input", (data: { value: string }) => {
     buyerInfoModel.setAddress(data.value);
-});
-
-events.on("buyer:changeAddress", () => {
-    const address = buyerInfoModel.getBuyerInfo().address;
-    paymentAddressFormModel.address = address;
-    const errors = buyerInfoModel.validateBuyerInfo();
-    let validate: string = "";
-    if (errors.payment && errors.address) {
-        validate = `${errors.address}; ${errors.payment}`;
-    } else if (errors.address) {
-        validate = `${errors.address}`;
-    } else if (errors.payment){
-        validate = `${errors.payment}`;
-    }
-    paymentAddressFormModel.errors = validate;
-    if (!errors.payment && !errors.address) {
-        paymentAddressFormModel.isallowedButton(false);
-    } else {
-        paymentAddressFormModel.isallowedButton(true);
-    }
 });
 
 events.on("order:submit", () => {
     modalWindowModel.content = emailPhoneFormModel.render();
 });
-
 events.on("email:input", (data: { value: string }) => {
     buyerInfoModel.setEmail(data.value);
 });
-
-events.on("buyer:changeEmail", () => {
-    const email = buyerInfoModel.getBuyerInfo().email;
-    emailPhoneFormModel.email = email;
-    const errors = buyerInfoModel.validateBuyerInfo();
-    let validate: string = "";
-    if (errors.phone && errors.email) {
-        validate = `${errors.email}; ${errors.phone}`;
-    } else if (errors.phone) {
-        validate = `${errors.phone}`;
-    } else if (errors.email){
-        validate = `${errors.email}`;
-    }
-    emailPhoneFormModel.errors = validate;
-    if (!errors.phone && !errors.email) {
-        emailPhoneFormModel.isallowedButton(false);
-    } else {
-        emailPhoneFormModel.isallowedButton(true);
-    }
-});
-
 events.on("phone:input", (data: { value: string }) => {
     buyerInfoModel.setPhone(data.value);
 });
 
-events.on("buyer:changePhone", () => {
-    const phone = buyerInfoModel.getBuyerInfo().email;
-    emailPhoneFormModel.email = phone;
-    const errors = buyerInfoModel.validateBuyerInfo();
-    let validate: string = "";
-    if (errors.phone && errors.email) {
-        validate = `${errors.email}; ${errors.phone}`;
-    } else if (errors.phone) {
-        validate = `${errors.phone}`;
-    } else if (errors.email){
-        validate = `${errors.email}`;
-    }
-    emailPhoneFormModel.errors = validate;
-    if (!errors.phone && !errors.email) {
-        emailPhoneFormModel.isallowedButton(false);
-    } else {
-        emailPhoneFormModel.isallowedButton(true);
-    }
-});
 
 events.on("contacts:submit", async () => {
     const buyerInfo = buyerInfoModel.getBuyerInfo();
@@ -251,11 +241,19 @@ events.on("contacts:submit", async () => {
     };
     try {
         const response = await apiModel.postOrder(orderRequest);
-        events.emit("api:successPost", response)
+
+        productsToBuyModel.clearBusket();
+        buyerInfoModel.deleteBuyerInfo();
+        orderSuccessModel.totalSum = response.total;
+        modalWindowModel.content = orderSuccessModel.render();
+        
+    
+        
     } catch (error) {
-        throw error
+        console.error(error);
     }  
 });
+
 
 events.on("api:successPost", (response: IOrderResponse) => {
     productsToBuyModel.clearBusket();
@@ -264,24 +262,8 @@ events.on("api:successPost", (response: IOrderResponse) => {
     modalWindowModel.content = orderSuccessModel.render();
 })
 
-events.on("basket:clear", () => {
-    const productsInBasket: HTMLElement[] = [];
-    const basketCounter = 0;
 
-    headerModel.counter = basketCounter;
-    basketModalModel.totalPrice = productsToBuyModel.getCostProductsToBuy();
-    basketModalModel.item = productsInBasket;
-    basketModalModel.isregisterButtonAllowed(true);
-});
 
-events.on("buyer:clear", () => {
-    paymentAddressFormModel.payment = "";
-    paymentAddressFormModel.address = "";
-    paymentAddressFormModel.isallowedButton(true);
-    emailPhoneFormModel.email = "";
-    emailPhoneFormModel.phone = "";
-    emailPhoneFormModel.isallowedButton(true);
-});
 
 events.on("orderSucces:close", () => {
     modalWindowModel.close();
@@ -291,9 +273,16 @@ events.on("modal:close", () => {
     modalWindowModel.close();
 });
 
+
 async function fetchCatalog() {
-    const response = await apiModel.getItems();
-    productsModel.setProducts(response.items)
+    try {
+        const response = await apiModel.getItems();
+        productsModel.setProducts(response.items);
+    } catch(error) {
+        console.log(error);
+    }
 }
 
-fetchCatalog().catch(console.error);
+fetchCatalog();
+
+

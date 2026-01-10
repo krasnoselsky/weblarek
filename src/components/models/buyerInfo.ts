@@ -4,11 +4,11 @@ import { IEvents } from "../base/Events";
 type ErrorsBuyer = Partial<Record<keyof IBuyer, string>>;
 
 export class BuyerInfo {
-    payment: "online" | "cash" | "";
-    email: string;
-    phone: string;
-    address: string;
-    events: IEvents;
+    private payment: "online" | "cash" | ""; 
+    private email: string; 
+    private phone: string; 
+    private address: string; 
+    private events: IEvents;
 
     constructor(events: IEvents) {
         this.payment = "";
@@ -16,6 +16,29 @@ export class BuyerInfo {
         this.phone = "";
         this.address = "";
         this.events = events;
+    }
+    getPayment(): "online" | "cash" | "" {
+        return this.payment;
+    }
+
+    
+    getEmail(): string {
+        return this.email;
+    }
+
+    
+    getPhone(): string {
+        return this.phone;
+    }
+
+    
+    getAddress(): string {
+        return this.address;
+    }
+
+    
+    getEvents(): IEvents {
+        return this.events;
     }
 
     setPayment(payment: "online" | "cash" | ""): void {

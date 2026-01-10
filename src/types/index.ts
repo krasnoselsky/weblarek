@@ -29,7 +29,7 @@ export interface IBuyer {
     address: string;
 }
 
-export type IProductFromApi = {
+export type TProductFromApi = {
     total: number;
     items: IProduct[];
 }
