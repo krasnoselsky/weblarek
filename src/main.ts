@@ -27,7 +27,7 @@ const buyerInfoModel = new BuyerInfo(events);
 const apiModel = new Communication(new Api(API_URL));
 
 const headerView = new Header(ensureElement(".header"), events);
-const galleryModel = new Gallery(ensureElement(".page__wrapper"), events);
+const galleryView = new Gallery(ensureElement(".page__wrapper"), events);
 const modalWindowModel = new ModalWindow(ensureElement(".modal"), events);
 const basketModalModel = new BasketModal(
     cloneTemplate<HTMLElement>("#basket"),
@@ -59,7 +59,7 @@ events.on("catalog:setProducts", () => {
         });
         return card.render(product);
     });
-    galleryModel.gallery = cards;
+    galleryView.gallery = cards;
 });
 
 events.on("basket:open", () => {
@@ -254,20 +254,6 @@ events.on("contacts:submit", async () => {
     }  
 });
 
-
-events.on("api:successPost", (response: IOrderResponse) => {
-    productsToBuyModel.clearBusket();
-    buyerInfoModel.deleteBuyerInfo();
-    orderSuccessModel.totalSum = response.total;
-    modalWindowModel.content = orderSuccessModel.render();
-})
-
-
-
-
-events.on("orderSucces:close", () => {
-    modalWindowModel.close();
-});
 
 events.on("modal:close", () => {
     modalWindowModel.close();
