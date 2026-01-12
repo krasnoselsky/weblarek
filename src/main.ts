@@ -28,24 +28,24 @@ const apiModel = new Communication(new Api(API_URL));
 
 const headerView = new Header(ensureElement(".header"), events);
 const galleryView = new Gallery(ensureElement(".page__wrapper"), events);
-const modalWindowModel = new ModalWindow(ensureElement(".modal"), events);
-const basketModalModel = new BasketModal(
+const modalWindowView = new ModalWindow(ensureElement(".modal"), events);
+const basketModalView = new BasketModal(
     cloneTemplate<HTMLElement>("#basket"),
     events
 );
-const paymentAddressFormModel = new PaymentAddressForm(
+const paymentAddressFormView = new PaymentAddressForm(
     cloneTemplate<HTMLElement>("#order"),
     events
 );
-const emailPhoneFormModel = new EmailPhoneForm(
+const emailPhoneFormView = new EmailPhoneForm(
     cloneTemplate<HTMLElement>("#contacts"),
     events
 );
-const orderSuccessModel = new OrderSuccess(
+const orderSuccessView = new OrderSuccess(
     cloneTemplate<HTMLElement>("#success"),
     events
 );
-const previewCard = new ProductPreview(
+const previewCardView = new ProductPreview(
         cloneTemplate<HTMLElement>("#card-preview"),
         events
     );
@@ -64,11 +64,11 @@ events.on("catalog:setProducts", () => {
 
 events.on("basket:open", () => {
     if (productsToBuyModel.getQuantityProductsToBuy() === 0) {
-        basketModalModel.isregisterButtonAllowed(true);
+        basketModalView.isregisterButtonAllowed(true);
     } else {
-        basketModalModel.isregisterButtonAllowed(false);
+        basketModalView.isregisterButtonAllowed(false);
     }
-    modalWindowModel.content = basketModalModel.render();
+    modalWindowView.content = basketModalView.render();
 });
 
 events.on("product:select", (product: IProduct) => {
@@ -79,14 +79,14 @@ events.on("catalog:setSelectedProduct", () => {
     const productSelected = productsModel.getSelectedProduct();
     if (!productSelected) return;
     const isInBusket = productsToBuyModel.isProductInBasket(productSelected.id);
-    previewCard.buttonText = isInBusket ? "Удалить из корзины" : "Купить";
+    previewCardView.buttonText = isInBusket ? "Удалить из корзины" : "Купить";
     if (productSelected.price === null) {
-        previewCard.buttonText = "Недоступно";
-        previewCard.buttonProhibited(true);
+        previewCardView.buttonText = "Недоступно";
+        previewCardView.buttonProhibited(true);
     } else {
-        previewCard.buttonProhibited(false);
+        previewCardView.buttonProhibited(false);
     }
-    modalWindowModel.content = previewCard.render(productSelected);
+    modalWindowView.content = previewCardView.render(productSelected);
 });
 
 events.on("product:choose", () => {
@@ -98,7 +98,7 @@ events.on("product:choose", () => {
     } else {
         productsToBuyModel.addProductsToBuy(productToBuy);
     }
-    modalWindowModel.close();
+    modalWindowView.close();
 });
 
 events.on("product:delete", (product: IProduct) => {
@@ -126,15 +126,15 @@ events.on("basket:change", () => {
     
     
     headerView.counter = basketCounter;
-    basketModalModel.totalPrice = totalPrice;
-    basketModalModel.item = arrProducts;
-    basketModalModel.isregisterButtonAllowed(basketCounter === 0);
+    basketModalView.totalPrice = totalPrice;
+    basketModalView.item = arrProducts;
+    basketModalView.isregisterButtonAllowed(basketCounter === 0);
 });
 
 
 
 events.on("busket:submit", () => {
-    modalWindowModel.content = paymentAddressFormModel.render();
+    modalWindowView.content = paymentAddressFormView.render();
 });
 
 events.on("payment:online", () => {
@@ -147,8 +147,8 @@ events.on("payment:cash", () => {
 
 function updatePaymentAddressForm() {
     const buyerData = buyerInfoModel.getBuyerInfo();
-    paymentAddressFormModel.payment = buyerData.payment;
-    paymentAddressFormModel.address = buyerData.address;
+    paymentAddressFormView.payment = buyerData.payment;
+    paymentAddressFormView.address = buyerData.address;
     const errors = buyerInfoModel.validateBuyerInfo();
     
     let validate: string = "";
@@ -160,18 +160,18 @@ function updatePaymentAddressForm() {
         validate = `${errors.payment}`;
     }
     
-    paymentAddressFormModel.errors = validate;
+    paymentAddressFormView.errors = validate;
     if (!errors.payment && !errors.address) {
-        paymentAddressFormModel.isallowedButton(false);
+        paymentAddressFormView.isallowedButton(false);
     } else {
-        paymentAddressFormModel.isallowedButton(true);
+        paymentAddressFormView.isallowedButton(true);
     }
 }
 
 function updateEmailPhoneForm() {
     const buyerData = buyerInfoModel.getBuyerInfo();
-    emailPhoneFormModel.email = buyerData.email;
-    emailPhoneFormModel.phone = buyerData.phone;
+    emailPhoneFormView.email = buyerData.email;
+    emailPhoneFormView.phone = buyerData.phone;
     const errors = buyerInfoModel.validateBuyerInfo();
     
     let validate: string = "";
@@ -183,11 +183,11 @@ function updateEmailPhoneForm() {
         validate = `${errors.email}`;
     }
     
-    emailPhoneFormModel.errors = validate;
+    emailPhoneFormView.errors = validate;
     if (!errors.phone && !errors.email) {
-        emailPhoneFormModel.isallowedButton(false);
+        emailPhoneFormView.isallowedButton(false);
     } else {
-        emailPhoneFormModel.isallowedButton(true);
+        emailPhoneFormView.isallowedButton(true);
     }
 }
 
@@ -216,7 +216,7 @@ events.on("address:input", (data: { value: string }) => {
 });
 
 events.on("order:submit", () => {
-    modalWindowModel.content = emailPhoneFormModel.render();
+    modalWindowView.content = emailPhoneFormView.render();
 });
 events.on("email:input", (data: { value: string }) => {
     buyerInfoModel.setEmail(data.value);
@@ -244,8 +244,8 @@ events.on("contacts:submit", async () => {
 
         productsToBuyModel.clearBusket();
         buyerInfoModel.deleteBuyerInfo();
-        orderSuccessModel.totalSum = response.total;
-        modalWindowModel.content = orderSuccessModel.render();
+        orderSuccessView.totalSum = response.total;
+        modalWindowView.content = orderSuccessView.render();
         
     
         
@@ -256,7 +256,7 @@ events.on("contacts:submit", async () => {
 
 
 events.on("modal:close", () => {
-    modalWindowModel.close();
+    modalWindowView.close();
 });
 
 
